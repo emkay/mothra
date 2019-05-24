@@ -4,7 +4,7 @@ use std::path::Path;
 use std::error::Error;
 use std::io::{self};
 
-use mothra::tasks::{Task, Tasks, Priority};
+use mothra::tasks::{Tasks, Priority};
 
 use dirs;
 
@@ -45,9 +45,9 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
 
     let mut ts = Tasks::new();
 
-    ts.add(Task::new(String::from("this is a cool task."), Priority::Low));
-    ts.add(Task::new(String::from("hello another bad boy"), Priority::Medium));
-    ts.add(Task::new(String::from("just some rad tasks"), Priority::High));
+    ts.add(String::from("this is a cool task."), Priority::Low);
+    ts.add(String::from("hello another bad boy"), Priority::Medium);
+    ts.add(String::from("just some rad tasks"), Priority::High);
 
     let serialized = serde_json::to_string(&ts).unwrap();
     let file_path = path.join("tasks.json");

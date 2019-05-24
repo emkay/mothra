@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use serde::{Serialize, Deserialize};
 
-/// The `Priority` type is used for assigning a priority to a `Task`.
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Priority {
     Low,
@@ -31,9 +30,14 @@ impl Tasks {
         }
     }
 
-    pub fn add(&mut self, task: Task) {
+    pub fn add(&mut self, description: String, priority: Priority) {
+        let task = Task::new(description, priority);
         self.items.insert(self.current_id, task);
         self.current_id += 1;
+    }
+
+    pub fn len(self) -> usize {
+        self.items.len()
     }
 }
 
@@ -50,5 +54,26 @@ impl Task {
     pub fn new(description: String, priority: Priority) -> Task {
         let dt = Utc::now();
         Task { description, priority, status: Status::Open, created: dt, updated: dt }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Tasks, Priority};
+
+    #[test]
+    fn basic() {
+        let tasks = Tasks::new();
+        assert_eq!(1, tasks.current_id);
+        assert_eq!(0, tasks.len());
+    }
+
+    #[test]
+    fn add_task() {
+        let mut tasks = Tasks::new();
+
+        tasks.add(String::from("this is a rad task."), Priority::Low);
+        let len = tasks.len();
+        assert_eq!(1, len);
     }
 }
