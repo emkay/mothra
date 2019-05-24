@@ -1,13 +1,12 @@
 use std::fs::{File, create_dir};
 use std::io::prelude::*;
 use std::path::Path;
-use std::collections::HashMap;
 use std::error::Error;
 use std::io::{self};
 
-use chrono::{DateTime, Utc};
+use mothra::tasks::{Task, Tasks, Priority};
+
 use dirs;
-use serde::{Serialize, Deserialize};
 
 #[paw::main]
 fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
@@ -44,13 +43,13 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
     println!("sub_cmd: {:?}", sub_cmd);
     println!("value: {:?}", value);
 
-    let mut tasks = Tasks::new();
+    let mut ts = Tasks::new();
 
-    tasks.add(Task::new(String::from("this is a cool task."), Priority::Low));
-    tasks.add(Task::new(String::from("hello another bad boy"), Priority::Medium));
-    tasks.add(Task::new(String::from("just some rad tasks"), Priority::High));
+    ts.add(Task::new(String::from("this is a cool task."), Priority::Low));
+    ts.add(Task::new(String::from("hello another bad boy"), Priority::Medium));
+    ts.add(Task::new(String::from("just some rad tasks"), Priority::High));
 
-    let serialized = serde_json::to_string(&tasks).unwrap();
+    let serialized = serde_json::to_string(&ts).unwrap();
     let file_path = path.join("tasks.json");
     let display = file_path.display();
 
@@ -65,53 +64,4 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-enum Priority {
-    Low,
-    Medium,
-    High,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-enum Status {
-    Open,
-    Closed
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Tasks {
-    current_id: u32,
-    items: HashMap<u32, Task>,
-}
-
-impl Tasks {
-    fn new() -> Tasks {
-        Tasks {
-            current_id: 1,
-            items: HashMap::new(),
-        }
-    }
-
-    fn add(&mut self, task: Task) {
-        self.items.insert(self.current_id, task);
-        self.current_id += 1;
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Task {
-    description: String,
-    priority: Priority,
-    status: Status,
-    created: DateTime<Utc>,
-    updated: DateTime<Utc>,
-}
-
-impl Task {
-    fn new(description: String, priority: Priority) -> Task {
-        let dt = Utc::now();
-        Task { description, priority, status: Status::Open, created: dt, updated: dt }
-    }
 }
