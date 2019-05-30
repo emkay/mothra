@@ -1,66 +1,60 @@
-use std::fs::{File, create_dir};
+use std::fs::{File};
 use std::io::prelude::*;
-use std::path::Path;
 use std::error::Error;
-use std::io::{self};
 
+use mothra::fs::FilesManager;
 use mothra::tasks::{Tasks, Priority};
-
-use dirs;
 
 #[paw::main]
 fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
-
-    let result = match dirs::home_dir() {
-        Some(dir) => {
-            Ok(Path::new(&dir).join(".mothra"))
-        },
-        None => Err("Path doesn't exist"),
-    };
-
-    let path = result?;
-
-    if !path.exists() {
-        println!("Creating dir for: {}", &path.display());
-        create_dir(&path)?;
-    }
-
     let mut args = args.skip(1);
 
-    let cmd = args
-        .next()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "the command argument is missing"))?;
+    let fm_result = FilesManager::new();
+    let fm = fm_result?;
 
-    let sub_cmd = args
-        .next()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "the sub command argument is missing"))?;
+    let dir_create = fm.create_mothra_dir()?;
 
-    let value = args
-        .next()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "there is no value"))?;
+    if dir_create {
+        let path = fm.full_path;
+        let cmd = args
+            .next();
 
-    println!("cmd: {:?}", cmd);
-    println!("sub_cmd: {:?}", sub_cmd);
-    println!("value: {:?}", value);
+        let value = args
+            .next();
 
-    let mut ts = Tasks::new();
+        match cmd {
+            Some(c) => {
+                if c == "add" {
+                    println!("add command");
 
-    ts.add(String::from("this is a cool task."), Priority::Low);
-    ts.add(String::from("hello another bad boy"), Priority::Medium);
-    ts.add(String::from("just some rad tasks"), Priority::High);
+                    match value {
+                        Some(v) => println!("{}", v),
+                        None => println!("no value!"),
+                    }
+                }
+            },
+            None => println!("No command given"),
+        }
 
-    let serialized = serde_json::to_string(&ts).unwrap();
-    let file_path = path.join("tasks.json");
-    let display = file_path.display();
+        let mut ts = Tasks::new();
 
-    let mut file = match File::create(&file_path) {
-        Err(why) => panic!("couldn't create {}: {}", display, why.description()),
-        Ok(file) => file,
-    };
+        let file_path = path.join("tasks.json");
+        let display = file_path.display();
 
-    match file.write_all(serialized.as_bytes()) {
-        Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
-        Ok(_) => println!("successfully wrote to {}", display),
+        if !file_path.exists() {
+            ts.add(String::from("this is a cool task."), Priority::Low);
+
+            let serialized = serde_json::to_string(&ts).unwrap();
+            let mut file = match File::create(&file_path) {
+                Err(why) => panic!("couldn't create {}: {}", display, why.description()),
+                Ok(file) => file,
+            };
+
+            match file.write_all(serialized.as_bytes()) {
+                Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
+                Ok(_) => println!("successfully wrote to {}", display),
+            }
+        }
     }
 
     Ok(())
