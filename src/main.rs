@@ -15,7 +15,7 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
     let dir_create = fm.create_mothra_dir()?;
 
     if dir_create {
-        let path = fm.full_path;
+        let file_path = fm.full_path;
         let cmd = args
             .next();
 
@@ -38,7 +38,6 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
 
         let mut ts = Tasks::new();
 
-        let file_path = path.join("tasks.json");
         let display = file_path.display();
 
         if !file_path.exists() {
