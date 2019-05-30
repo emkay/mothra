@@ -25,12 +25,12 @@ impl FilesManager {
         })
     }
 
-    pub fn create_mothra_dir(&self) -> Result<bool, Box<dyn Error>> {
+    pub fn create_mothra_dir(&self) -> Result<(), Box<dyn Error>> {
         if !self.home_dir.exists() {
             println!("Creating dir for: {}", self.home_dir.display());
             create_dir(&self.home_dir)?;
         }
 
-        Ok(true)
+        Ok(())
     }
 }

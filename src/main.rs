@@ -12,48 +12,46 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
     let fm_result = FilesManager::new();
     let fm = fm_result?;
 
-    let dir_create = fm.create_mothra_dir()?;
+    fm.create_mothra_dir()?;
 
-    if dir_create {
-        let file_path = fm.full_path;
-        let cmd = args
-            .next();
+    let file_path = fm.full_path;
+    let cmd = args
+        .next();
 
-        let value = args
-            .next();
+    let value = args
+        .next();
 
-        match cmd {
-            Some(c) => {
-                if c == "add" {
-                    println!("add command");
+    match cmd {
+        Some(c) => {
+            if c == "add" {
+                println!("add command");
 
-                    match value {
-                        Some(v) => println!("{}", v),
-                        None => println!("no value!"),
-                    }
+                match value {
+                    Some(v) => {
+                        let mut ts = Tasks::new();
+
+                        let display = file_path.display();
+
+                        if file_path.exists() {
+                            ts.add(String::from(v), Priority::Low);
+
+                            let serialized = serde_json::to_string(&ts).unwrap();
+                            let mut file = match File::create(&file_path) {
+                                Err(why) => panic!("couldn't create {}: {}", display, why.description()),
+                                Ok(file) => file,
+                            };
+
+                            match file.write_all(serialized.as_bytes()) {
+                                Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
+                                Ok(_) => println!("successfully wrote to {}", display),
+                            }
+                        }
+                    },
+                    None => println!("no value!"),
                 }
-            },
-            None => println!("No command given"),
-        }
-
-        let mut ts = Tasks::new();
-
-        let display = file_path.display();
-
-        if !file_path.exists() {
-            ts.add(String::from("this is a cool task."), Priority::Low);
-
-            let serialized = serde_json::to_string(&ts).unwrap();
-            let mut file = match File::create(&file_path) {
-                Err(why) => panic!("couldn't create {}: {}", display, why.description()),
-                Ok(file) => file,
-            };
-
-            match file.write_all(serialized.as_bytes()) {
-                Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
-                Ok(_) => println!("successfully wrote to {}", display),
             }
-        }
+        },
+        None => println!("No command given"),
     }
 
     Ok(())
