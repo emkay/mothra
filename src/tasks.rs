@@ -19,7 +19,7 @@ pub enum Status {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Tasks {
     current_id: u32,
-    items: HashMap<u32, Task>,
+    pub items: HashMap<u32, Task>,
 }
 
 impl Tasks {
@@ -43,11 +43,11 @@ impl Tasks {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Task {
-    description: String,
-    priority: Priority,
-    status: Status,
-    created: DateTime<Utc>,
-    updated: DateTime<Utc>,
+    pub description: String,
+    pub priority: Priority,
+    pub status: Status,
+    pub created: DateTime<Utc>,
+    pub updated: DateTime<Utc>,
 }
 
 impl Task {

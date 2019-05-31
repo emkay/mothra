@@ -23,25 +23,21 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
     let value = args
         .next();
 
+    let mut ts: Tasks;
+
+    if file_path.exists() {
+        let file_result = read_file(&file_path);
+        let content = file_result?;
+        ts = serde_json::from_str(&content).unwrap();
+    } else {
+        ts = Tasks::new();
+    }
     match cmd {
         Some(c) => {
             if c == "add" {
-                println!("add command");
-
                 match value {
                     Some(v) => {
                         let display = file_path.display();
-                        let mut ts: Tasks;
-
-                        if file_path.exists() {
-                            let file_result = read_file(&file_path);
-                            let content = file_result?;
-                            ts = serde_json::from_str(&content).unwrap();
-                        } else {
-                            ts = Tasks::new();
-                        }
-
-                        println!("{:?}", ts);
 
                         ts.add(String::from(v), Priority::Low);
 
@@ -60,7 +56,16 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
                 }
             }
         },
-        None => println!("No command given"),
+        None => {
+            for task in ts.items.values() {
+                println!("{}\t{:?}\t{:?}\t{}\t{}",
+                         task.description,
+                         task.priority,
+                         task.status,
+                         task.created,
+                         task.updated);
+            }
+        }
     }
 
     Ok(())
