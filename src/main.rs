@@ -1,6 +1,8 @@
 use std::fs::{File};
 use std::io::prelude::*;
 use std::error::Error;
+use std::path::PathBuf;
+use std::io::BufReader;
 
 use mothra::fs::FilesManager;
 use mothra::tasks::{Tasks, Priority};
@@ -28,23 +30,30 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
 
                 match value {
                     Some(v) => {
-                        let mut ts = Tasks::new();
-
                         let display = file_path.display();
+                        let mut ts: Tasks;
 
                         if file_path.exists() {
-                            ts.add(String::from(v), Priority::Low);
+                            let file_result = read_file(&file_path);
+                            let content = file_result?;
+                            ts = serde_json::from_str(&content).unwrap();
+                        } else {
+                            ts = Tasks::new();
+                        }
 
-                            let serialized = serde_json::to_string(&ts).unwrap();
-                            let mut file = match File::create(&file_path) {
-                                Err(why) => panic!("couldn't create {}: {}", display, why.description()),
-                                Ok(file) => file,
-                            };
+                        println!("{:?}", ts);
 
-                            match file.write_all(serialized.as_bytes()) {
-                                Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
-                                Ok(_) => println!("successfully wrote to {}", display),
-                            }
+                        ts.add(String::from(v), Priority::Low);
+
+                        let serialized = serde_json::to_string(&ts).unwrap();
+                        let mut file = match File::create(&file_path) {
+                            Err(why) => panic!("couldn't create {}: {}", display, why.description()),
+                            Ok(file) => file,
+                        };
+
+                        match file.write_all(serialized.as_bytes()) {
+                            Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
+                            Ok(_) => println!("successfully wrote to {}", display),
                         }
                     },
                     None => println!("no value!"),
@@ -55,4 +64,16 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+fn read_file(filepath: &PathBuf) -> Result<String, Box<dyn Error>> {
+    let file = File::open(filepath)?;
+    let mut buffered_reader = BufReader::new(file);
+    let mut contents = String::new();
+    let _number_of_bytes: usize = match buffered_reader.read_to_string(&mut contents) {
+        Ok(number_of_bytes) => number_of_bytes,
+        Err(_err) => 0
+    };
+
+    Ok(contents)
 }
