@@ -1,3 +1,4 @@
+use std::fmt;
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
@@ -10,10 +11,33 @@ pub enum Priority {
     High,
 }
 
+impl fmt::Display for Priority {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let value = match *self {
+            Priority::Low => "Low",
+            Priority::Medium => "Medium",
+            Priority::High => "High",
+        };
+
+        write!(f, "{}", value)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Status {
     Open,
     Closed
+}
+
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let value = match *self {
+            Status::Open => "Open",
+            Status::Closed => "Closed",
+        };
+
+        write!(f, "{}", value)
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

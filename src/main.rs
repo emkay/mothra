@@ -4,6 +4,8 @@ use std::error::Error;
 use std::path::PathBuf;
 use std::io::BufReader;
 
+use tabular::{Table, Row};
+
 use mothra::fs::FilesManager;
 use mothra::tasks::{Tasks, Priority};
 
@@ -57,14 +59,29 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
             }
         },
         None => {
+            let mut table = Table::new("{:<}   {:<}   {:<}   {:<}   {:<}");
+
+            let header = Row::new()
+                .with_cell("Description")
+                .with_cell("Priority")
+                .with_cell("Status")
+                .with_cell("Created")
+                .with_cell("Updated");
+
+            table.add_row(header);
+
             for task in ts.items.values() {
-                println!("{}\t{:?}\t{:?}\t{}\t{}",
-                         task.description,
-                         task.priority,
-                         task.status,
-                         task.created,
-                         task.updated);
+                let row = Row::new()
+                    .with_cell(&task.description)
+                    .with_cell(&task.priority)
+                    .with_cell(&task.status)
+                    .with_cell(&task.created)
+                    .with_cell(&task.updated);
+
+                table.add_row(row);
             }
+
+            println!("{}", table);
         }
     }
 
