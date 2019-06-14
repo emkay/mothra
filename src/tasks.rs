@@ -55,9 +55,13 @@ impl Tasks {
     }
 
     pub fn add(&mut self, description: String, priority: Priority) {
-        let task = Task::new(description, priority);
+        let task = Task::new(self.current_id, description, priority);
         self.items.insert(self.current_id, task);
         self.current_id += 1;
+    }
+
+    pub fn close(&mut self, id: u32) {
+        self.items.remove(&id);
     }
 
     pub fn len(self) -> usize {
@@ -67,6 +71,7 @@ impl Tasks {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Task {
+    pub id: u32,
     pub description: String,
     pub priority: Priority,
     pub status: Status,
@@ -75,9 +80,9 @@ pub struct Task {
 }
 
 impl Task {
-    pub fn new(description: String, priority: Priority) -> Task {
+    pub fn new(id: u32, description: String, priority: Priority) -> Task {
         let dt = Utc::now();
-        Task { description, priority, status: Status::Open, created: dt, updated: dt }
+        Task { id, description, priority, status: Status::Open, created: dt, updated: dt }
     }
 }
 

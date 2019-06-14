@@ -56,12 +56,35 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
                     },
                     None => println!("no value!"),
                 }
+            } else if c == "close" {
+                match value {
+                    Some(v) => {
+                        let id = v.parse::<u32>()?;
+
+                        ts.close(id);
+
+                        // @TODO: dang these should be moved out somewhere
+                        let display = file_path.display();
+                        let serialized = serde_json::to_string(&ts).unwrap();
+                        let mut file = match File::create(&file_path) {
+                            Err(why) => panic!("couldn't create {}: {}", display, why.description()),
+                            Ok(file) => file,
+                        };
+
+                        match file.write_all(serialized.as_bytes()) {
+                            Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
+                            Ok(_) => println!("successfully wrote to {}", display),
+                        }
+                    },
+                    None => println!("no value!"),
+                }
             }
         },
         None => {
-            let mut table = Table::new("{:<}   {:<}   {:<}   {:<}   {:<}");
+            let mut table = Table::new("{:<} {:<}   {:<}   {:<}   {:<}   {:<}");
 
             let header = Row::new()
+                .with_cell("Id")
                 .with_cell("Description")
                 .with_cell("Priority")
                 .with_cell("Status")
@@ -72,6 +95,7 @@ fn main(args: paw::Args) -> Result<(), Box<dyn Error>> {
 
             for task in ts.items.values() {
                 let row = Row::new()
+                    .with_cell(&task.id)
                     .with_cell(&task.description)
                     .with_cell(&task.priority)
                     .with_cell(&task.status)
