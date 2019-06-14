@@ -1,6 +1,6 @@
 [package]
 name = "mothra"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Michael Matuzak <mmatuzak@gmail.com>"]
 edition = "2018"
 description = "A small CLI todo list"
